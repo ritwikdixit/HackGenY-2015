@@ -3,10 +3,14 @@
 var frameOutput = document.getElementById("frameData");
 var play = document.getElementById("play");
 var canvas = document.getElementById("myCanvas");
+var debug = document.getElementById("debug");
 var ctx;
 
 var hasStarted = false;
 var isAlive = true;
+var hasShownDeath = false;
+var shieldOn = false;
+var shield = 100;
 
 var frameCount = 0;
 
@@ -33,6 +37,9 @@ var previousFrame = null;
 var paused = false;
 var pauseOnGesture = false;
 
+//for handling offscreen Delay
+var MAX_DISPLACE = 100;
+
 function Enemy(xpos, ypos, xspeed, yspeed) {
 
   this.xspeed = xspeed;
@@ -42,6 +49,9 @@ function Enemy(xpos, ypos, xspeed, yspeed) {
 
 }
 
+function mod(n, m) {
+        return ((m % n) + n) % n;
+}
 //creating a method for the enemy object
 Enemy.prototype.update = function() {
 
@@ -54,26 +64,44 @@ Enemy.prototype.update = function() {
     if (this.ypos + enemyDimen > playerY && this.ypos < playerY
       || this.ypos < playerY + playerDimen && this.ypos + enemyDimen > playerY + playerDimen) {
 
-          isAlive = false;
-          play.innerHTML = "Game Over. You survived for " + (frameCount/60.0) + "s";
+          if (!shieldOn) {
+            isAlive = false;
+            play.innerHTML = "Game Over. You survived for " + (frameCount/60.0) + "s";
+            if (!hasShownDeath) {
+              drawDead();
+              hasShownDeath = true;
+            }
+          } 
 
     }
 
   }
 
-  this.xpos %= canvas.width;
-  this.ypos %= canvas.height;
+  //handle going off of the screen
+  if (this.xpos < -MAX_DISPLACE) {
+    this.xpos = canvas.width + MAX_DISPLACE/2;
+  } else if (this.xpos > canvas.width + MAX_DISPLACE) {
+    this.xpos = -MAX_DISPLACE/2;
+  }
+
+  if (this.ypos < -MAX_DISPLACE) {
+    this.ypos = canvas.height + MAX_DISPLACE/2;
+  } else if (this.ypos > canvas.height + MAX_DISPLACE) {
+    this.ypos = -MAX_DISPLACE/2
+  }
 
   ctx.fillStyle = "rgb(50, 200, 50)";
   ctx.fillRect(this.xpos, this.ypos, enemyDimen, enemyDimen);
 
 }
 
-var enemy1 = new Enemy(-100, -100, 4, 4);
-var enemy2 = new Enemy(canvas.width, 0, -3, 3);
-var enemy3 = new Enemy(-50, canvas.height/2, 4, 0);
-var enemy4 = new Enemy(canvas.width/3, 1, 5);
-var enemy5 = new Enemy(canvas.width/2, -200, -0.5, 5)
+var enemy1 = new Enemy(-MAX_DISPLACE/2, -MAX_DISPLACE/2, Math.random() * 6, 4);
+var enemy2 = new Enemy(canvas.width + MAX_DISPLACE/2, -MAX_DISPLACE/2, -3, 3);
+var enemy3 = new Enemy(-MAX_DISPLACE/2, canvas.height/2, 4, 0);
+var enemy4 = new Enemy(Math.random() * canvas.width, -MAX_DISPLACE/2,  1, 5);
+var enemy5 = new Enemy(canvas.width + MAX_DISPLACE/2, canvas.height + MAX_DISPLACE/2, -3, -3);
+var enemy6 = new Enemy(canvas.width + Math.random() * MAX_DISPLACE, canvas.height, -1, - Math.random() * 7);
+
 
 // Setup Leap loop with frame callback function
 var controllerOptions = {enableGestures: true};
@@ -90,32 +118,58 @@ var controllerOptions = {enableGestures: true};
     ctx.fillStyle = "rgb(" + (256 - Math.min(superColor - 64, 200)).toString() + ", 50, 50)"
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    //set color for enemy
     enemy1.update();
     enemy2.update();
     enemy3.update();
     enemy4.update();
     enemy5.update();
+    enemy6.update();
+
+    if (shieldOn) {
+
+      //draw shield
+      ctx.beginPath();
+      ctx.arc(playerX + playerDimen/2, playerY + playerDimen/2, playerDimen, 0, 2*Math.PI, false);
+      ctx.fillStyle = "rgb(200, 200, 255)";
+      ctx.fill();
+
+    }
 
     //draw player
     ctx.fillStyle = "rgb(255, 255, 255)"
     ctx.fillRect(playerX, playerY, playerDimen, playerDimen);
+
+      if (shieldOn && frameCount % 2 == 0 && shield > 0) {
+        shield -= 1;
+      }
+
+      ctx.fillStyle = "rgb(25, 25, 25)";
+      ctx.font = "18px Arial";
+      ctx.fillText("Shield Power = " + shield + "%", canvas.width/2, 18);
+
     frameCount += 1;
     if (frameCount % 5 == 0) {
-      play.innerHTML = "Survival Time: " + (frameCount / 60.0) + "s";
+      play.innerHTML = "Survival Time: " + (frameCount / 60.0).toFixed(2) + "s";
+    }
+
+    if (frameCount % 20 == 0) {
+      shield++;
     }
 
   }
 
   function drawPreGame() {
 
-    if (!hasStarted) {
+    if (!hasStarted && isAlive) {
       window.requestAnimationFrame(drawPreGame);
     }
     ctx = canvas.getContext("2d");
     ctx.clearRect(0,  0, canvas.width, canvas.height);
 
-    ctx.fillStyle = "rgb(200, 200, 200)"
+    ctx.fillStyle = "rgb(240, 240, 240)"
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "rgb(160, 160, 160)"
     ctx.fillRect(playerX, playerY, playerDimen, playerDimen);
 
   }
@@ -125,7 +179,21 @@ var controllerOptions = {enableGestures: true};
   function drawDead() {
 
     if (!isAlive) {
-      alert("You Died!");
+      window.requestAnimationFrame(drawDead);
+    }
+
+    ctx = canvas.getContext("2d");
+    ctx.clearRect(0,  0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "rgb(" + deathAnimColor + "," + deathAnimColor + "," + deathAnimColor + ")";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (deathAnimColor < 250) {
+      deathAnimColor += 5;
+    } else {
+      ctx.fillStyle = "rgb(50, 50, 50)";
+      ctx.font = "24px Arial";
+      ctx.fillText("Make a Circle with your Finger to Restart.", canvas.width/2 - 200, canvas.height/2);
     }
 
   }
@@ -154,6 +222,30 @@ var controllerOptions = {enableGestures: true};
             
   }
 
+  function restartGame() {
+
+    play.innerHTML = "Play with 1 Flat, Open Hand. Make a Fist and Open Quickly to Start."
+
+    enemy1 = new Enemy(-MAX_DISPLACE/2, -MAX_DISPLACE/2, Math.random() * 6, 4);
+    enemy2 = new Enemy(canvas.width + MAX_DISPLACE/2, -MAX_DISPLACE/2, -3, 3);
+    enemy3 = new Enemy(-MAX_DISPLACE/2, canvas.height/2, 4, 0);
+    enemy4 = new Enemy(Math.random() * canvas.width, -MAX_DISPLACE/2,  1, 5);
+    enemy5 = new Enemy(canvas.width + MAX_DISPLACE/2, canvas.height + MAX_DISPLACE/2, -3, -3);
+    enemy6 = new Enemy(canvas.width + Math.random() * MAX_DISPLACE, canvas.height, -1, - Math.random() * 7);
+
+    isAlive = true;
+    hasStarted = false;
+    hasShownDeath = false;
+    frameCount = 0;
+
+    shieldOn = false;
+    shield = 100;
+
+    drawPreGame();
+
+  }
+
+  //on open
   drawPreGame();
 
 Leap.loop(controllerOptions, function(frame) {
@@ -205,6 +297,19 @@ Leap.loop(controllerOptions, function(frame) {
         //fist to begin!
         draw();
         hasStarted = true;
+      } else if (hasStarted && isAlive && hand.grabStrength >= 0.99) {
+        //SHIELD!!! if there is room
+        if (shield > 0) {
+          shieldOn = true;
+        }
+
+        debug.innerHTML = "SHIELD";
+      }
+
+      //if they had shield but now not in fist
+      if (hand.grabStrength < 0.99) {
+        shieldOn = false;
+        debug.innerHTML = "vulnerable";
       }
 
       // Hand motion factors
@@ -264,7 +369,14 @@ Leap.loop(controllerOptions, function(frame) {
                         + "normal: " + vectorToString(gesture.normal, 2) + ", "
                         + "radius: " + gesture.radius.toFixed(1) + " mm, "
                         + "progress: " + gesture.progress.toFixed(2) + " rotations";
+
+          //a circle gesture indicates  a restart ****************************************************************
+          if (!isAlive && hasShownDeath) { 
+            restartGame(); 
+          }
+
           break;
+
         case "swipe":
           gestureString += "start position: " + vectorToString(gesture.startPosition) + " mm, "
                         + "current position: " + vectorToString(gesture.position) + " mm, "
