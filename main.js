@@ -50,9 +50,6 @@ function Enemy(xpos, ypos, xspeed, yspeed) {
 
 }
 
-function mod(n, m) {
-        return ((m % n) + n) % n;
-}
 //creating a method for the enemy object
 Enemy.prototype.update = function() {
 
@@ -150,7 +147,7 @@ var controllerOptions = {enableGestures: true};
 
       ctx.fillStyle = "rgb(250, 250, 250)";
       ctx.font = "18px Arial";
-      ctx.fillText("Shield Power = " + shield + "%", canvas.width/2, 24);
+      ctx.fillText("Shield Power = " + shield, canvas.width/2, 24);
 
     frameCount += 1;
     if (frameCount % 5 == 0) {
