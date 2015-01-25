@@ -4,6 +4,7 @@ var frameOutput = document.getElementById("frameData");
 var play = document.getElementById("play");
 var canvas = document.getElementById("myCanvas");
 var debug = document.getElementById("debug");
+var audio = document.getElementById("song");
 var ctx;
 
 var hasStarted = false;
@@ -14,8 +15,8 @@ var shield = 100;
 
 var frameCount = 0;
 
-var initWidth = 640;
-var initHeight = 400;
+var initWidth = 720;
+var initHeight = 480;
 
 //define the centers
 var eqX = 100;
@@ -39,6 +40,8 @@ var pauseOnGesture = false;
 
 //for handling offscreen Delay
 var MAX_DISPLACE = 100;
+
+//song by waterflame80
 
 function Enemy(xpos, ypos, xspeed, yspeed) {
 
@@ -141,6 +144,10 @@ var controllerOptions = {enableGestures: true};
 
       if (shieldOn && frameCount % 2 == 0 && shield > 0) {
         shield -= 1;
+      }
+
+      if (shield <= 0) {
+        shieldOn = false;
       }
 
       ctx.fillStyle = "rgb(25, 25, 25)";
@@ -297,6 +304,8 @@ Leap.loop(controllerOptions, function(frame) {
         //fist to begin!
         draw();
         hasStarted = true;
+        audio.play();
+
       } else if (hasStarted && isAlive && hand.grabStrength >= 0.99) {
         //SHIELD!!! if there is room
         if (shield > 0) {
