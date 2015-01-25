@@ -1,9 +1,7 @@
 //the game ?
 //Ritwik Dixit HackGenY
-var frameOutput = document.getElementById("frameData");
 var play = document.getElementById("play");
 var canvas = document.getElementById("myCanvas");
-var debug = document.getElementById("debug");
 var audio = document.getElementById("song");
 var ctx;
 
@@ -69,7 +67,7 @@ Enemy.prototype.update = function() {
 
           if (!shieldOn) {
             isAlive = false;
-            play.innerHTML = "Game Over. You survived for " + (frameCount/60.0) + "s";
+            play.innerHTML = "Game Over. You survived for " + (frameCount/60.0).toFixed(2) + "s";
             if (!hasShownDeath) {
               drawDead();
               hasShownDeath = true;
@@ -150,9 +148,9 @@ var controllerOptions = {enableGestures: true};
         shieldOn = false;
       }
 
-      ctx.fillStyle = "rgb(25, 25, 25)";
+      ctx.fillStyle = "rgb(250, 250, 250)";
       ctx.font = "18px Arial";
-      ctx.fillText("Shield Power = " + shield + "%", canvas.width/2, 18);
+      ctx.fillText("Shield Power = " + shield + "%", canvas.width/2, 24);
 
     frameCount += 1;
     if (frameCount % 5 == 0) {
@@ -175,6 +173,10 @@ var controllerOptions = {enableGestures: true};
 
     ctx.fillStyle = "rgb(240, 240, 240)"
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "rgb(25, 25, 25)";
+    ctx.font = "18px Arial";
+    ctx.fillText("Calibration Step: Center your Character and get used to moving.", canvas.width/5, 100);
 
     ctx.fillStyle = "rgb(160, 160, 160)"
     ctx.fillRect(playerX, playerY, playerDimen, playerDimen);
@@ -200,7 +202,7 @@ var controllerOptions = {enableGestures: true};
     } else {
       ctx.fillStyle = "rgb(50, 50, 50)";
       ctx.font = "24px Arial";
-      ctx.fillText("Make a Circle with your Finger to Restart.", canvas.width/2 - 200, canvas.height/2);
+      ctx.fillText("Draw a Circle with your Index Finger to Restart.", canvas.width/2 - 200, canvas.height/2);
     }
 
   }
@@ -277,7 +279,6 @@ Leap.loop(controllerOptions, function(frame) {
     var scaleFactor = frame.scaleFactor(previousFrame);
     frameString += "Scale factor: " + scaleFactor.toFixed(2) + "<br />";
   }
-  frameOutput.innerHTML = "<div style='width:300px; float:left; padding:5px'>" + frameString + "</div>";
 
   // Display Hand object data
   var handOutput = document.getElementById("handData");
@@ -311,14 +312,11 @@ Leap.loop(controllerOptions, function(frame) {
         if (shield > 0) {
           shieldOn = true;
         }
-
-        debug.innerHTML = "SHIELD";
       }
 
       //if they had shield but now not in fist
       if (hand.grabStrength < 0.99) {
         shieldOn = false;
-        debug.innerHTML = "vulnerable";
       }
 
       // Hand motion factors

@@ -1,35 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet" href="styled.css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css'>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Leap JavaScript</title>
 <script src="http://js.leapmotion.com/leap-0.6.3.min.js"></script>
 </head>
     
 <body>
-<div id="main">
+<div id="main" class = "topLevel">
 
     <div width="100%" height="200" background-color="#DDCCDD">
-        <h2>Leap to Live</h2>
+        <h2>  Leap to Live  </h2>
     </div>
     <canvas id="myCanvas" width="720" height="480" >
     
     </canvas>
 
-    <h2 id="play">Play with 1 Flat, Open Hand. Make a Fist and Open Quickly to Start.</h2>
-    <h2 id="debug">For Debugging</h2>
-    
-    <h3>Frame data:</h3>
-    <div id="frameData"></div>
-    <div style="clear:both;"></div>
-
-    <h3>Hand data:</h3>
+    <h2 id="play">Play with 1 Flat, Open Hand. Make a Fist and Open to Start.</h2>
+    <p class="tutorial">Use the leap motion to avoid the squares flying at you! To start, make a fist and then quickly flatten your hand. To use your shield, hold a fist at any time. Make sure to keep your hand flat and horizontal while playing. You start in the calibration step to center your character, then make a fist and quickly flatten your hand to start. To restart after death, simple make a circular motion with 1 finger. Try to survive as long as you can!</p>
+    <h2>Hand data:</h2>
     <div id="handData"></div>
     <div style="clear:both;"></div>
 
-    <h3>Gesture data:</h3>
+    <h2>Gesture data:</h2>
     <div id="gestureData"></div>
-    <h1>Ritwik Leap .js</h1>
+    <h2>Created By Ritwik Dixit at HackGenY 2015</h2>
 
     <audio id="song" src="hexagon_force.mp3" type="audio/mpeg">
     </audio>
