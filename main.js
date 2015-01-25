@@ -1,8 +1,14 @@
 //the game ?
 //Ritwik Dixit HackGenY
 var frameOutput = document.getElementById("frameData");
+var play = document.getElementById("play");
 var canvas = document.getElementById("myCanvas");
 var ctx;
+
+var hasStarted = false;
+var isAlive = true;
+
+var frameCount = 0;
 
 var initWidth = 640;
 var initHeight = 400;
@@ -27,13 +33,57 @@ var previousFrame = null;
 var paused = false;
 var pauseOnGesture = false;
 
+function Enemy(xpos, ypos, xspeed, yspeed) {
+
+  this.xspeed = xspeed;
+  this.yspeed = yspeed;
+  this.xpos = xpos;
+  this.ypos = ypos;
+
+}
+
+//creating a method for the enemy object
+Enemy.prototype.update = function() {
+
+  this.xpos += this.xspeed;
+  this.ypos += this.yspeed;
+
+  if (this.xpos + enemyDimen > playerX  && this.xpos < playerX
+    || this.xpos < playerX + playerDimen && this.xpos + enemyDimen > playerX + playerDimen) {
+
+    if (this.ypos + enemyDimen > playerY && this.ypos < playerY
+      || this.ypos < playerY + playerDimen && this.ypos + enemyDimen > playerY + playerDimen) {
+
+          isAlive = false;
+          play.innerHTML = "Game Over. You survived for " + (frameCount/60.0) + "s";
+
+    }
+
+  }
+
+  this.xpos %= canvas.width;
+  this.ypos %= canvas.height;
+
+  ctx.fillStyle = "rgb(50, 200, 50)";
+  ctx.fillRect(this.xpos, this.ypos, enemyDimen, enemyDimen);
+
+}
+
+var enemy1 = new Enemy(-100, -100, 4, 4);
+var enemy2 = new Enemy(canvas.width, 0, -3, 3);
+var enemy3 = new Enemy(-50, canvas.height/2, 4, 0);
+var enemy4 = new Enemy(canvas.width/3, 1, 5);
+var enemy5 = new Enemy(canvas.width/2, -200, -0.5, 5)
+
 // Setup Leap loop with frame callback function
 var controllerOptions = {enableGestures: true};
-console.log("We are loading");
 
   function draw() {
 
-    window.requestAnimationFrame(draw);
+    if (isAlive) {
+      window.requestAnimationFrame(draw);
+    }
+
     ctx = canvas.getContext("2d");
     ctx.clearRect(0,  0, canvas.width, canvas.height);
 
@@ -41,20 +91,44 @@ console.log("We are loading");
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     //set color for enemy
-    ctx.fillStyle = "rgb(50, 200, 50)"
-
-    //move and draw enemies
-    enemyX += 4;
-    enemyY += 4;
-    ctx.fillRect(enemyX % initWidth, enemyY % initHeight, enemyDimen, enemyDimen);
+    enemy1.update();
+    enemy2.update();
+    enemy3.update();
+    enemy4.update();
+    enemy5.update();
 
     //draw player
     ctx.fillStyle = "rgb(255, 255, 255)"
     ctx.fillRect(playerX, playerY, playerDimen, playerDimen);
+    frameCount += 1;
+    if (frameCount % 5 == 0) {
+      play.innerHTML = "Survival Time: " + (frameCount / 60.0) + "s";
+    }
 
   }
 
-  draw();
+  function drawPreGame() {
+
+    if (!hasStarted) {
+      window.requestAnimationFrame(drawPreGame);
+    }
+    ctx = canvas.getContext("2d");
+    ctx.clearRect(0,  0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "rgb(200, 200, 200)"
+    ctx.fillRect(playerX, playerY, playerDimen, playerDimen);
+
+  }
+
+  var deathAnimColor = 50;
+
+  function drawDead() {
+
+    if (!isAlive) {
+      alert("You Died!");
+    }
+
+  }
 
     function moveForXY(vector) {
       
@@ -79,6 +153,8 @@ console.log("We are loading");
       }
             
   }
+
+  drawPreGame();
 
 Leap.loop(controllerOptions, function(frame) {
   if (paused) {
@@ -124,6 +200,12 @@ Leap.loop(controllerOptions, function(frame) {
       handString += "Arm up vector: " + vectorToString(hand.arm.basis[1]) + "<br />";
         
       moveForXY(hand.arm.center());
+
+      if (!hasStarted && hand.grabStrength >= 0.99) {
+        //fist to begin!
+        draw();
+        hasStarted = true;
+      }
 
       // Hand motion factors
       if (previousFrame && previousFrame.valid) {
