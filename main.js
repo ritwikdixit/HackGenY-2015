@@ -5,11 +5,17 @@ var canvas = document.getElementById("myCanvas");
 var audio = document.getElementById("song");
 var ctx;
 
+Parse.initialize("7Pb0XrqD5y7WE2MGsiDTI4ns2OdTxGH77Azmlaq1", "ioRlGBIIXMfg49KSGphyfynKQ3J6AVU6GIS6qoqD");
+var server = new Firebase("https://hackgeny.firebaseio.com/");
+var TestObject = Parse.Object.extend("TestObject");
+var testObject = new TestObject();
+
 var hasStarted = false;
 var isAlive = true;
 var hasShownDeath = false;
 var shieldOn = false;
 var shield = 100;
+var show
 
 var frameCount = 0;
 
@@ -67,6 +73,7 @@ Enemy.prototype.update = function() {
             play.innerHTML = "Game Over. You survived for " + (frameCount/60.0).toFixed(2) + "s";
             if (!hasShownDeath) {
               drawDead();
+              uploadDataToServer();
               hasShownDeath = true;
             }
           } 
@@ -249,6 +256,43 @@ var controllerOptions = {enableGestures: true};
 
     drawPreGame();
 
+  }
+
+  function uploadDataToServer() {
+    //testing!
+    /*server.update({
+      score: (frameCount/60.0).toFixed(2) + ""
+    });*/
+      getDataFromServer();
+      testObject.save(
+        {highscore1: (frameCount/60.0).toFixed(2) + ""}, 
+      {
+      success: function(object) {
+        $(".success").show();
+      },
+      error: function(model, error) {
+        $(".error").show();
+      }
+    });
+  }
+
+  function getDataFromServer() {
+
+    var scores = ["High Scores"];
+
+    var query = new Parse.Query(TestObject);
+    query.find({
+      success: function (results) {
+
+        for (var i = 0; i < results.length; i++) {
+          var score = results[i].get("highscore");
+            scores.push(score);
+            play.innerHTML = scores;
+        }
+      }
+
+    })
+    
   }
 
   //on open
