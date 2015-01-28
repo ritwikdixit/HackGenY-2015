@@ -278,7 +278,7 @@ var controllerOptions = {enableGestures: true};
 
   function getDataFromServer() {
 
-    var scores = ["High Scores"];
+    var scores = ["High Scores: "];
 
     var query = new Parse.Query(TestObject);
     query.find({
@@ -286,7 +286,7 @@ var controllerOptions = {enableGestures: true};
 
         for (var i = 0; i < results.length; i++) {
           var score = results[i].get("highscore");
-            scores.push(score);
+            scores.push("<br/>" + score);
             play.innerHTML = scores;
         }
       }
